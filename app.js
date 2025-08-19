@@ -103,6 +103,25 @@ app.get('/api/me', requireJwt, async (req, res) => {
 	}
 });
 
+// DB debug endpoint (temporary; remove after debugging)
+app.get('/api/debug/db', async (req, res) => {
+	try {
+		const state = mongoose.connection.readyState; // 0=disconnected,1=connected,2=connecting,3=disconnecting
+		let ping = null;
+		if (state === 1 && mongoose.connection.db) {
+			ping = await mongoose.connection.db.admin().ping();
+		}
+		res.json({
+			readyState: state,
+			dbName: mongoose.connection.name,
+			hosts: mongoose.connection.hosts || [],
+			ping
+		});
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+});
+
 // React SPA fallback (Express 5 compatible)
 app.get(/^\/(?!api|assets).*/, (req, res) => {
 	const indexPath = path.join(__dirname, 'dist', 'index.html');
