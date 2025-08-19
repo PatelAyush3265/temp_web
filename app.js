@@ -10,6 +10,10 @@ const app = express();
 const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET || 'replace-jwt-secret';
 const DB_NAME = process.env.DB_NAME || 'temp_web';
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://your-app.vercel.app'],
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+}));
 
 if (!MONGO_URI) {
 	console.error('Missing MONGO_URI in environment.');
