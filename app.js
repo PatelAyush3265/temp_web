@@ -4,16 +4,16 @@ const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-
+const cors = require('cors');
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://your-app.vercel.app'],
+  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+}));
 const app = express();
 
 const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET || 'replace-jwt-secret';
 const DB_NAME = process.env.DB_NAME || 'temp_web';
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://your-app.vercel.app'],
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-}));
 
 if (!MONGO_URI) {
 	console.error('Missing MONGO_URI in environment.');
@@ -22,11 +22,11 @@ if (!MONGO_URI) {
 
 if (mongoose.connection.readyState === 0) {
 	mongoose
-		.connect(MONGO_URI, { dbName: DB_NAME })
+		.connect(MONGO_URI, { dbName: DB_NAME, serverSelectionTimeoutMS: 8000 })
 		.then(() => console.log(`Connected to MongoDB (db: ${DB_NAME})`))
 		.catch((err) => {
 			console.error('Mongo connection error:', err);
-			process.exit(1);
+			// Do not exit in serverless; let function return 500
 		});
 }
 
@@ -72,6 +72,7 @@ app.post('/api/signup', async (req, res) => {
 		await user.save();
 		return res.status(201).json({ message: 'User created' });
 	} catch (err) {
+		console.error('POST /api/signup error', err);
 		return res.status(500).json({ error: 'Server error' });
 	}
 });
@@ -86,20 +87,32 @@ app.post('/api/login', async (req, res) => {
 		const token = issueToken(user);
 		return res.json({ token });
 	} catch (err) {
+		console.error('POST /api/login error', err);
 		return res.status(500).json({ error: 'Server error' });
 	}
 });
 
 app.get('/api/me', requireJwt, async (req, res) => {
-	const user = await User.findById(req.jwt.sub).lean();
-	if (!user) return res.status(404).json({ error: 'Not found' });
-	res.json({ _id: user._id, email: user.email, username: user.username, createdAt: user.createdAt });
+	try {
+		const user = await User.findById(req.jwt.sub).lean();
+		if (!user) return res.status(404).json({ error: 'Not found' });
+		res.json({ _id: user._id, email: user.email, username: user.username, createdAt: user.createdAt });
+	} catch (err) {
+		console.error('GET /api/me error', err);
+		return res.status(500).json({ error: 'Server error' });
+	}
 });
 
 // React SPA fallback (Express 5 compatible)
 app.get(/^\/(?!api|assets).*/, (req, res) => {
 	const indexPath = path.join(__dirname, 'dist', 'index.html');
 	res.sendFile(indexPath);
+});
+
+// Global error handler (always JSON)
+app.use((err, req, res, next) => {
+	console.error('Unhandled error:', err);
+	res.status(500).json({ error: 'Server error' });
 });
 
 module.exports = app;
