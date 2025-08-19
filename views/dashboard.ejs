@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Dashboard • Dreamy Auth</title>
+	<link rel="stylesheet" href="/assets/styles.css" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-slate-100 font-[Poppins]">
+	<main class="container mx-auto px-4 py-10">
+		<section class="max-w-2xl mx-auto">
+			<div class="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/10">
+				<h1 class="text-3xl font-bold mb-2">Hello, <%= user.username %> ✨</h1>
+				<p class="text-slate-300 mb-6">Welcome to your dreamy dashboard.</p>
+
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="rounded-xl bg-white/5 border border-white/10 p-4">
+						<h2 class="font-semibold text-slate-200">Your details</h2>
+						<ul class="mt-2 text-slate-300 text-sm">
+							<li><span class="text-slate-400">Username:</span> <%= user.username %></li>
+							<li><span class="text-slate-400">Email:</span> <%= user.email %></li>
+							<li><span class="text-slate-400">User ID:</span> <%= user._id %></li>
+						</ul>
+					</div>
+					<div class="rounded-xl bg-gradient-to-br from-fuchsia-500/30 to-indigo-500/30 border border-white/10 p-4">
+						<h2 class="font-semibold text-slate-200">Status</h2>
+						<p class="mt-2 text-slate-100">Logged in and secure. Enjoy the vibes 🌙</p>
+					</div>
+				</div>
+
+				<form method="POST" action="/logout" class="mt-8">
+					<button class="px-5 py-2 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition">Log out</button>
+				</form>
+			</div>
+		</section>
+	</main>
+	<footer class="text-center text-slate-400 text-sm py-8">Made with ❤ Dreamy UI</footer>
+</body>
+</html>
